@@ -18,7 +18,11 @@ module Spree
       else
         self.class.remove_preference :test
       end
-      super
+      result = super
+      if result[:order_id].to_s.match(/^[A-Z][0-9]+$/)
+        result[:order_id] << "-#{Time.now.to_i}"
+      end
+      result
     end
 
   end
