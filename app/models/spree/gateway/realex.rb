@@ -5,24 +5,41 @@ module Spree
     preference :password, :string
     preference :account, :string, :default => "internet"
 
-    attr_accessible :preferred_login, :preferred_password
+    attr_accessible :preferred_login, :preferred_password, :preferred_account
     
     def provider_class
       ActiveMerchant::Billing::RealexGateway
     end
 
     def options
-      # add :test key in the options hash, as that is what the ActiveMerchant::Billing::AuthorizeNetGateway expects
-      if self.preferred_test_mode
-        self.class.preference :test, :boolean, :default => true
-      else
-        self.class.remove_preference :test
-      end
-      result = super
-      if result[:order_id].to_s.match(/^[A-Z][0-9]+$/)
-        result[:order_id] << "-#{Time.now.to_i}"
+      #if self.preferred_test_mode
+      #self.class.preference :test, :boolean, :default => true
+      #else
+      #self.class.remove_preference :test
+      #end
+      super
+    end
+
+    def authorize(money, creditcard, options = {})
+      result = super(money,creditcard,make_order_id_unique(options))
+      unless result.success?
+        logger.error "Failed to authorize order #{options[:order_id]} #{result.inspect}" 
+        #raise "Failed to authorize order #{options[:order_id]} #{result.inspect}" 
       end
       result
+    end
+
+    def purchase(money, creditcard, options = {})
+      result = super(money,creditcard,make_order_id_unique(options))
+      unless result.success?
+        logger.error "Failed to purchase order #{options[:order_id]} #{result.inspect}" 
+      end
+      result
+    end
+
+    def make_order_id_unique(options)
+      options[:order_id] << "-#{Time.now.to_i}"
+      options
     end
 
   end
