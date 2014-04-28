@@ -12,15 +12,25 @@ module SpreeGateway
     initializer "spree.gateway.payment_methods", :after => "spree.register.payment_methods" do |app|
         app.config.spree.payment_methods << Spree::Gateway::AuthorizeNetCim
         app.config.spree.payment_methods << Spree::Gateway::AuthorizeNet
+        app.config.spree.payment_methods << Spree::Gateway::CardSave
         app.config.spree.payment_methods << Spree::Gateway::Eway
         app.config.spree.payment_methods << Spree::Gateway::Linkpoint
+        app.config.spree.payment_methods << Spree::Gateway::Moneris
         app.config.spree.payment_methods << Spree::Gateway::PayPal
         app.config.spree.payment_methods << Spree::Gateway::SagePay
         app.config.spree.payment_methods << Spree::Gateway::Beanstream
-        app.config.spree.payment_methods << Spree::Gateway::Braintree
-        app.config.spree.payment_methods << Spree::Gateway::Stripe
+        app.config.spree.payment_methods << Spree::Gateway::BraintreeGateway
+        app.config.spree.payment_methods << Spree::Gateway::StripeGateway
         app.config.spree.payment_methods << Spree::Gateway::Realex
         app.config.spree.payment_methods << Spree::Gateway::Samurai
+        app.config.spree.payment_methods << Spree::Gateway::Worldpay
+        app.config.spree.payment_methods << Spree::Gateway::Banwire
+        app.config.spree.payment_methods << Spree::Gateway::UsaEpay
+        app.config.spree.payment_methods << Spree::BillingIntegration::Skrill::QuickCheckout
+        app.config.spree.payment_methods << Spree::Gateway::BalancedGateway
+        app.config.spree.payment_methods << Spree::Gateway::DataCash
+        app.config.spree.payment_methods << Spree::Gateway::UsaEpay
+        app.config.spree.payment_methods << Spree::Gateway::PinGateway
     end
   end
 

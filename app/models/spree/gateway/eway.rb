@@ -1,25 +1,22 @@
 module Spree
   class Gateway::Eway < Gateway
     preference :login, :string
-    
+
     attr_accessible :preferred_login
 
     # Note: EWay supports purchase method only (no authorize method).
-    # Ensure Spree::Config[:auto_capture] is set to true
+    def auto_capture?
+      true
+    end
 
     def provider_class
       ActiveMerchant::Billing::EwayGateway
     end
 
-    def options
-      # add :test key in the options hash, as that is what the ActiveMerchant::Billing::EwayGateway expects
-      if self.preferred_test_mode
-        self.class.preference :test, :boolean, :default => true
-      else
-        self.class.remove_preference :test
-      end
-
-      super
+    def options_with_test_preference
+      options_without_test_preference.merge(:test => self.preferred_test_mode)
     end
+
+    alias_method_chain :options, :test_preference
   end
 end
