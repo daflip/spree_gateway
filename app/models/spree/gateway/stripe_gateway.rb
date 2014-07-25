@@ -40,10 +40,23 @@ module Spree
         :login => preferred_login
       }.merge! address_for(payment)
 
+      # if we have a gateway token then assign the customer id
+      # and mark the latest card as being the default
+      if payment.order.user.gateway_token.present?
+        options[:customer] = payment.order.user.gateway_token
+        options[:set_default] = true
+      end
+
       response = provider.store(payment.source, options)
       if response.success?
+        unless options[:customer]
+          customer_token = response.params['id']
+          payment.order.user.update_attributes!({
+              gateway_token: customer_token
+            })
+        end
         payment.source.update_attributes!({
-          :gateway_customer_profile_id => response.params['id'],
+          :gateway_customer_profile_id => options[:customer] || response.params['id'],
           :gateway_payment_profile_id => response.params['default_card']
         })
       else
@@ -58,7 +71,11 @@ module Spree
       options[:description] = "Order Number: #{gateway_options[:order_id]}"
       options[:currency] = 'EUR'
 
-      if customer = creditcard.gateway_customer_profile_id
+      if customer = creditcard.payments.last.order.user.gateway_token
+        options[:customer] = customer
+        creditcard = nil
+        #raise creditcard.payments.last.order.user.inspect
+      elsif customer = creditcard.gateway_customer_profile_id
         options[:customer] = customer
         creditcard = nil
       elsif token = creditcard.gateway_payment_profile_id
